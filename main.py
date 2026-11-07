@@ -41,12 +41,12 @@ def add_expense(date, amount, category, subcategory="", note=""):
         return {"status": "ok", "id": curr.lastrowid}
     
 @mcp.tool()
-def list_expense():
+def list_expense(START_DATE, END_DATE):
     
     ''' Show all the transaction in the database '''
     
     with sqlite3.connect(DB_PATH) as c:
-        curr = c.execute("SELECT id, date, amount, category, subcategory, note FROM expenses ORDER BY id ASC")
+        curr = c.execute("SELECT id, date, amount, category, subcategory, note FROM expenses WHERE BETWEEN ? AND ? ORDER BY id ASC"), (START_DATE, END_DATE)
         cols =[d[0] for d in curr.description]
         return [dict(zip(cols, r)) for r in curr.fetchall()]
     
