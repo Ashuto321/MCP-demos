@@ -39,7 +39,8 @@ def add_expense(date, amount, category, subcategory="", note=""):
             (date, amount, category, subcategory, note)
         )
         return {"status": "ok", "id": curr.lastrowid}
-    
+
+# tool for listing the expense in a specific date range 
 @mcp.tool()
 def list_expense(START_DATE, END_DATE):
     
@@ -50,5 +51,35 @@ def list_expense(START_DATE, END_DATE):
         cols =[d[0] for d in curr.description]
         return [dict(zip(cols, r)) for r in curr.fetchall()]
     
+    
+@mcp.tool
+# tools for summarizing the expense in a specific date range 
+def summarizer(start_date, end_date, category=None):
+    
+    """ Summarize the expenses in the date range given! """
+    
+    with sqlite3.connect(DB_PATH) as c:
+        
+        query = (
+            """
+            SELECT category, SUM(amount) AS total_amount
+            FROM expenses
+            Where date BETWEEN ? AND ?
+            
+            """
+                )
+        
+        params = [start_date, end_date]
+        
+        if category:
+            query += "AND category = ?" # if category ccomes then adding it into the query
+            
+            query += "GROUP BY category ORDER BY category ASC"
+            
+            curr = c.execute(query, params)
+            cols = [d[0] for d in curr.description]
+            return [dict(zip(cols,r)) for r in curr.fetchall()]
+        
+               
 if __name__ == "__main__":
     mcp.run()
